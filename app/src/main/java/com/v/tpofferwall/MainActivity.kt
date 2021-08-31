@@ -19,9 +19,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             TPOfferWallTheme {
                 val vm = viewModel<TypeShowVM>()
-                LaunchedEffect(vm){
-                    vm.VMInit()
-                }
                 Surface(color = MaterialTheme.colors.background) {
                     TypeShowScreen(vm = vm)
                 }

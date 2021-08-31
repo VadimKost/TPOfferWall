@@ -31,12 +31,12 @@ class TypeShowVM @Inject constructor(
     var idsList = listOf<DataItem>()
 
     var currentIndex = 0
-
-    suspend fun VMInit(){
-        if (getInitList()){
-            getItem()
+    init {
+        runBlocking {
+            if (getInitList()){
+                getItem()
+            }
         }
-
     }
     // return boolean which indicate if network call was successful
     suspend fun getInitList():Boolean{
