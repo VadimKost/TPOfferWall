@@ -25,29 +25,32 @@ import javax.inject.Inject
 class TypeShowVM @Inject constructor(
     val dataRepository: DataRepository
 ): ViewModel() {
-    init {
-        Log.e("V","Create")
-    }
     private val _data = MutableStateFlow<UiState<DataItemInfo>>(UiState.Loading)
     val data = _data.asStateFlow()
 
     var idsList = listOf<DataItem>()
 
     var currentIndex = 0
-    suspend fun initGetItem(){
-        getInitList()
-        getItem()
-    }
 
-    suspend fun getInitList(){
-        withContext(IO){
+    suspend fun VMInit(){
+        if (getInitList()){
+            getItem()
+        }
+
+    }
+    // return boolean which indicate if network call was successful
+    suspend fun getInitList():Boolean{
+        return withContext(IO){
             val initList:Result<Data> = dataRepository.getAllData()
             when(initList){
                 is Result.Success ->{
-                    idsList=initList.data.data
+                    idsList=idsList.plus(initList.data.data)
+                    idsList=idsList.distinct()
+                    return@withContext true
                 }
                 is Result.Error -> {
                     _data.value = UiState.Error(initList.message)
+                    return@withContext false
                 }
             }
         }
@@ -55,18 +58,18 @@ class TypeShowVM @Inject constructor(
 
     fun getItem(){
         viewModelScope.launch {
+            _data.value =UiState.Loading
             if (idsList.size-1 < currentIndex){
                 currentIndex=0
             }
-            Log.e("Vid",idsList.toString())
+
             val dataItemInfo =dataRepository.getDataItemInfo(idsList[currentIndex].id)
+
             when(dataItemInfo){
                 is Result.Success ->{
                     if (dataItemInfo.data.type in SupportedTypes.types){
-                        Log.e("Vitem",dataItemInfo.data.toString())
-                        Log.e("Vindex",currentIndex.toString())
-                        _data.value =UiState.Success(dataItemInfo.data)
                         currentIndex+=1
+                        _data.value =UiState.Success(dataItemInfo.data)
                     }else{
                         currentIndex+=1
                         getItem()

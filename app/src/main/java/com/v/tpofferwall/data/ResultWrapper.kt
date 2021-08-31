@@ -43,7 +43,7 @@ class ResponseStateCall<T>(proxy: Call<T>) : CallDelegate<T, Result<T>>(proxy) {
         }
 
         override fun onFailure(call: Call<T>, t: Throwable) {
-            val result = Result.Error("Offline")
+            val result = Result.Error("Offline\nPlease close app and try again")
             callback.onResponse(this@ResponseStateCall, Response.success(result))
         }
     })
